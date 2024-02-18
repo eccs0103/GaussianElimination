@@ -31,19 +31,6 @@ internal static class Extensions
 		}
 		return minIndex;
 	}
-	public static String Stringify<T>(this T[,] matrix)
-	{
-		StringBuilder builder = new();
-		for (Int32 y = 0; y < matrix.GetLength(0); y++)
-		{
-			for (Int32 x = 0; x < matrix.GetLength(1); x++)
-			{
-				_ = builder.Append($"{matrix[y, x]} ");
-			}
-			_ = builder.Append('\n');
-		}
-		return builder.ToString();
-	}
 }
 
 internal class Program
@@ -55,16 +42,16 @@ internal class Program
 	}
 	static String ReadInput()
 	{
-		String input = "";
+		StringBuilder builder = new();
 		while (true)
 		{
 			Int32 code = Console.Read();
 			if (code < 0) break;
 			Char current = (Char) code;
 			if (current == ';') break;
-			input += current;
+			builder.Append(current);
 		}
-		return input;
+		return builder.ToString();
 	}
 	static Double[][] ParseGraph(String input)
 	{
@@ -79,7 +66,7 @@ internal class Program
 				}
 				catch
 				{
-					throw new FormatException($"Unable to convert value '{value}' of cell [{x}, {y}] to integer number");
+					throw new FormatException($"Unable to convert value '{value}' of cell [{x}, {y}] to number");
 				}
 			}).ToArray();
 		}).ToArray();
@@ -126,6 +113,24 @@ internal class Program
 			}
 		}
 	}
+	static Double[][] BuildGraph(Double[,] matrix)
+	{
+		Point2D size = new(matrix.GetLength(1), matrix.GetLength(0));
+		Double[][] graph = new Double[size.Y][];
+		for (Int32 y = 0; y < size.Y; y++)
+		{
+			graph[y] = new Double[size.X];
+			for (Int32 x = 0; x < size.X; x++)
+			{
+				graph[y][x] = matrix[y, x];
+			}
+		}
+		return graph;
+	}
+	static String Stringify(Double[][] graph)
+	{
+		return $"{String.Join(",\n", graph.Select(row => String.Join(" ", row)))};";
+	}
 	static void Main()
 	{
 		ConsoleColor colorDefault = Console.ForegroundColor;
@@ -143,16 +148,16 @@ internal class Program
 			{
 				String input = ReadInput();
 				Double[][] graph = ParseGraph(input);
-				Double[,] matix = BuildMatix(graph);
-				GaussianElimination(matix);
+				Double[,] matrix = BuildMatix(graph);
+				GaussianElimination(matrix);
 				Console.ForegroundColor = colorHighlight;
-				Console.Write($"\nResult is:\n{matix.Stringify()}\n");
+				Console.Write($"\nResult is:\n{Stringify(BuildGraph(matrix))}\n\n");
 				Console.ForegroundColor = colorDefault;
 			}
 			catch (Exception exception)
 			{
 				Console.ForegroundColor = colorHighlight;
-				Console.Write($"\nAttept elaminated with reason:");
+				Console.Write($"\nAttemp elaminated with reason:");
 				Console.ForegroundColor = colorAlert;
 				Console.Write($" {exception.Message}\n\n");
 				Console.ForegroundColor = colorDefault;
